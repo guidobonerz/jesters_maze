@@ -1,0 +1,13 @@
+{
+    "name": "jesters_maze",
+    "description": "Project jesters_maze",
+    "toolkit": "kick",
+    "sources": [
+        "src/jester.asm"
+    ],
+    "build": "debug",
+    "definitions": [],
+    "includes": [],
+    "args": [],
+    "compiler": ""
+}
