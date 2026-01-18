@@ -87,6 +87,12 @@ txtTurboOn:
 txtTurboOff:
 .text "Turbo [OFF]"
 .byte 13,0
+txtConnectSocket:
+.text "Connect Socket"
+.byte 13,0
+txtWriteSocket:
+.text "Write Socket"
+.byte 13,0
 
 connectTcpSocket:{
     //print(txtConnectTcpSocket)
@@ -99,8 +105,6 @@ connectTcpSocket:{
     //print(dataBuffer)
     //print(statusDataBuffer)
     //print(CRLF)
-    lda readData
-    sta status
     rts
 }
 NET_CMD_TCP_SOCKET_CONNECT:

@@ -26,13 +26,66 @@
 .pc = $0820
 start:
     jsr prepare
+    print(txtConnectSocket)
+    print(CRLF)
     jsr connectUdpSocket
+    print(statusDataBuffer)
+    print(CRLF)
+    lda socket
+    cmp #$00
+    bne doSendStart
+    jsr closeSocket
+    rts
+doSendStart:
+    print(txtWriteSocket)
+    print(CRLF)
     jsr sendStart
-    jsr handleResponse
-    lda $0400
-    sta $d015
+    print(statusDataBuffer)
+    print(CRLF)
+    lda status
+    cmp #$00
+    bne doHandleResponse
     
+    jsr closeSocket
+    rts
+doHandleResponse:
+    jsr handleResponse
 loop:
+    lda #$0c
+    sta $d027 //n
+    sta $d028 //w
+    sta $d029 //e
+    sta $d02a //s
+    //lda $0400
+
+//  sta $d015
+
+n:
+    lda $0400
+    and #%0000001
+    beq w
+    lda #$07
+    sta $d027
+w:
+    lda $0400
+    and #%0000010
+    beq e
+    lda #$07
+    sta $d028
+e:
+    lda $0400
+    and #%0000100
+    beq s
+    lda #$07
+    sta $d029
+s:
+    lda $0400
+    and #%0001000
+    beq a
+    lda #$07
+    sta $d02a
+    
+a:
     lda $0402
     sta $d020
     jsr waitFrame
@@ -58,8 +111,8 @@ checkNorth:
     sta NET_CMD_WALK+4
     jsr sendWalk
     jsr handleResponse
-    lda $0400
-    sta $d015
+    //lda $0400
+    //sta $d015
     //inc $d020
     jmp noAction
 checkSouth:
@@ -70,8 +123,8 @@ checkSouth:
     sta NET_CMD_WALK+4
     jsr sendWalk
     jsr handleResponse
-    lda $0400
-    sta $d015
+    //lda $0400
+    //sta $d015
     //inc $d020
     jmp noAction
 checkWest:
@@ -82,8 +135,8 @@ checkWest:
     sta NET_CMD_WALK+4
     jsr sendWalk
     jsr handleResponse
-    lda $0400
-    sta $d015
+    //lda $0400
+    //sta $d015
     //inc $d020
     jmp noAction
 checkEast:
@@ -94,8 +147,8 @@ checkEast:
     sta NET_CMD_WALK+4
     jsr sendWalk
     jsr handleResponse
-    lda $0400
-    sta $d015
+    //lda $0400
+    //sta $d015
     //inc $d020
     jmp noAction
 checkFire:
@@ -209,6 +262,8 @@ sendStart:{
     print(dataBuffer+2)
     print(statusDataBuffer)
     print(CRLF)
+    lda dataBuffer
+    sta status
     rts
 }
 NET_CMD_START:
@@ -225,6 +280,8 @@ sendWalk:{
     print(dataBuffer+2)
     print(statusDataBuffer)
     print(CRLF)
+    lda dataBuffer
+    sta status
     rts
 }
 NET_CMD_WALK:
