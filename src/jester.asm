@@ -1,22 +1,6 @@
 #import "src/constants.asm" 
 .encoding "petscii_mixed"
-.macro print(text){
-    pha
-    txa                     
-    pha
-    tya
-    pha
-    php
-    lda #<text
-    ldy #>text
-    jsr STROUT
-    plp
-    pla
-    tay
-    pla
-    tax
-    pla
-}
+
 
 
 *=$0801
@@ -25,6 +9,14 @@
 
 .pc = $0820
 start:
+    print(CLEAR_HOME_CASE)
+    jsr checkU64
+    lda type
+    cmp #$ff
+    beq isU64
+    print(txtOnlyForU64BasedDevices)
+    rts
+isU64:
     jsr prepare
     print(txtConnectSocket)
     print(CRLF)
@@ -55,10 +47,7 @@ loop:
     sta $d028 //w
     sta $d029 //e
     sta $d02a //s
-    //lda $0400
-
-//  sta $d015
-
+   
 n:
     lda $0400
     and #%0000001
@@ -106,49 +95,49 @@ checkNorth:
     lda joyValue
     and #$01
     bne checkSouth
+    lda $0400
+    and #%0000001
+    beq checkSouth
     lda #78  //'N'
     sta NET_CMD_WALK+4
     jsr sendWalk
     jsr handleResponse
-    //lda $0400
-    //sta $d015
-    //inc $d020
     jmp noAction
 checkSouth:
     lda joyValue
     and #$02
     bne checkWest
+    lda $0400
+    and #%0001000
+    beq checkWest
     lda #83//'S'
     sta NET_CMD_WALK+4
     jsr sendWalk
     jsr handleResponse
-    //lda $0400
-    //sta $d015
-    //inc $d020
     jmp noAction
 checkWest:
     lda joyValue
     and #$04
     bne checkEast
+    lda $0400
+    and #%0000010
+    beq checkEast
     lda #87//'W'
     sta NET_CMD_WALK+4
     jsr sendWalk
     jsr handleResponse
-    //lda $0400
-    //sta $d015
-    //inc $d020
     jmp noAction
 checkEast:
     lda joyValue
     and #$08
     bne checkFire
+    lda $0400
+    and #%0000100
+    beq checkFire
     lda #69//'E'
     sta NET_CMD_WALK+4
     jsr sendWalk
     jsr handleResponse
-    //lda $0400
-    //sta $d015
-    //inc $d020
     jmp noAction
 checkFire:
     lda joyValue
@@ -179,6 +168,11 @@ txtLeft:
 .byte 13,0
 txtRight:
 .text "Right"
+.byte 13,0
+txtOnlyForU64BasedDevices:
+.text "This software is only for"
+.byte 13
+.text "U64 based devices from Gideon..."
 .byte 13,0
 
 
@@ -252,9 +246,9 @@ sendStart:{
     jsr readData
     jsr readStatusData
     jsr accept
-    print(dataBuffer+2)
-    print(statusDataBuffer)
-    print(CRLF)
+    //print(dataBuffer+2)
+    //print(statusDataBuffer)
+    //print(CRLF)
     lda dataBuffer
     sta status
     rts
@@ -270,9 +264,9 @@ sendWalk:{
     jsr readData
     jsr readStatusData
     jsr accept
-    print(dataBuffer+2)
-    print(statusDataBuffer)
-    print(CRLF)
+    //print(dataBuffer+2)
+    //print(statusDataBuffer)
+    //print(CRLF)
     lda dataBuffer
     sta status
     rts

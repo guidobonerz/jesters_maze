@@ -3,6 +3,24 @@ socket: .byte 00
 status: .byte 00
 uppercase: .byte 00
 
+.macro print(text){
+    pha
+    txa                     
+    pha
+    tya
+    pha
+    php
+    lda #<text
+    ldy #>text
+    jsr STROUT
+    plp
+    pla
+    tay
+    pla
+    tax
+    pla
+}
+
 .macro sendCommand(cmdStart,cmdEnd){
     pha
     txa                     
@@ -130,10 +148,10 @@ connectUdpSocket:{
 }
 NET_CMD_UDP_SOCKET_CONNECT:
     .byte $03,$08,$86,$fc
-    .text "10.100.200.227"
+    //.text "10.100.200.227"
+    .text "maschine1.de"
     .byte 0
 NET_CMD_UDP_SOCKET_CONNECT_END:
-
 counter: .byte 0
 skipHeader: .byte 0
 markerCount: .byte 0
@@ -260,7 +278,7 @@ loop:
 commandLength: .word 0
 
 _sendCommand:{
-    jsr waitFrame
+    //jsr waitFrame
     lda CONTROL_REG
     ora #$04
     sta CONTROL_REG
@@ -297,8 +315,11 @@ resetEndPointer:
     ///--------------------
     //log(txtBusy)
     //jsr logStatus
+    
 waitForIdle:
-    print(txtWaitForIdle)
+    //print(txtWaitForIdle)
+    jsr waitFrame
+    jsr waitFrame
     lda STATUS_REG
     and #%00110000
     bne waitForIdle
@@ -331,7 +352,7 @@ checkForError:
     jmp _sendCommand
 noError:
 waitBusyClear: 
-    print(txtWaitBusyClear)
+    //print(txtWaitBusyClear)
     lda STATUS_REG
     and #%00110000
     cmp #$10
@@ -416,7 +437,30 @@ loop:
     bne loop
     rts
 }
+wait1:
+    ldy #$ff
+wl1:
+    dey
+    bne wl1
+wait2:   
+    ldy #$ff
+wl2:
+    dey
+    bne wl2
+wait3:
+    ldy #$ff
+wl3:
+    dey
+    bne wl3
+wait4:
+    ldy #$ff
+wl4:
+    dey
+    bne wl4
+    rts
 
+CLEAR_HOME_CASE:
+.byte $93,$0e,0
 CRLF:
 .byte 13,0
 .align $100
