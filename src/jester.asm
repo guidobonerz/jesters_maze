@@ -45,7 +45,6 @@ doSendStart:
     lda status
     cmp #$00
     bne doHandleResponse
-    
     jsr closeSocket
     rts
 doHandleResponse:
@@ -182,13 +181,7 @@ txtRight:
 .text "Right"
 .byte 13,0
 
-waitFrame: {
-    lda #250
-loop:
-    cmp $D012
-    bne loop
-    rts
-}
+
 
 prepare:{
     lda #00

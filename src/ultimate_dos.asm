@@ -231,7 +231,6 @@ NET_CMD_SOCKET_WRITE:
 NET_CMD_SOCKET_WRITE_END:
 
 closeSocket:{
-    
     lda socket
     sta NET_CMD_SOCKET_CLOSE+2
     sendCommand(NET_CMD_SOCKET_CLOSE,NET_CMD_SOCKET_CLOSE_END)
@@ -261,6 +260,11 @@ loop:
 commandLength: .word 0
 
 _sendCommand:{
+    jsr waitFrame
+    lda CONTROL_REG
+    ora #$04
+    sta CONTROL_REG
+    
     //log(txtPrepare)    
     lda #$00
     sta commandLength
@@ -294,6 +298,7 @@ resetEndPointer:
     //log(txtBusy)
     //jsr logStatus
 waitForIdle:
+    print(txtWaitForIdle)
     lda STATUS_REG
     and #%00110000
     bne waitForIdle
@@ -326,6 +331,7 @@ checkForError:
     jmp _sendCommand
 noError:
 waitBusyClear: 
+    print(txtWaitBusyClear)
     lda STATUS_REG
     and #%00110000
     cmp #$10
@@ -335,7 +341,12 @@ exit:
     //jsr logStatus
     rts
 }
-
+txtWaitBusyClear:
+.text "WAIT BUSY CLEAR"
+.byte 13,0
+txtWaitForIdle:
+.text "WAIT FOR IDLE"
+.byte 13,0
 //.align $100
 readData:{
     //log(txtRead)
@@ -395,7 +406,16 @@ accepted:
     pla
     rts
 }
+  
 
+
+waitFrame: {
+    lda #250
+loop:
+    cmp $D012
+    bne loop
+    rts
+}
 
 CRLF:
 .byte 13,0
