@@ -3,7 +3,7 @@
     "description": "Project jesters_maze",
     "toolkit": "kick",
     "sources": [
-        "src/jester.asm"
+        "src/game/jester.asm"
     ],
     "build": "debug",
     "definitions": [],

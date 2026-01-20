@@ -1,4 +1,6 @@
-#import "src/constants.asm" 
+#define DEBUG
+#define REMOTE
+#import "src/game/constants.asm" 
 .encoding "petscii_mixed"
 
 
@@ -9,7 +11,7 @@
 
 .pc = $0820
 start:
-    print(CLEAR_HOME_CASE)
+    print(CLEAR_HOME_CASE_SENSE)
     jsr checkU64
     lda type
     cmp #$ff
@@ -18,22 +20,22 @@ start:
     rts
 isU64:
     jsr prepare
-    print(txtConnectSocket)
-    print(CRLF)
+    //print(txtConnectSocket)
+    //print(CRLF)
     jsr connectUdpSocket
-    print(statusDataBuffer)
-    print(CRLF)
+    //print(statusDataBuffer)
+    //print(CRLF)
     lda socket
     cmp #$00
     bne doSendStart
     jsr closeSocket
     rts
 doSendStart:
-    print(txtWriteSocket)
-    print(CRLF)
+    //print(txtWriteSocket)
+    //print(CRLF)
     jsr sendStart
-    print(statusDataBuffer)
-    print(CRLF)
+    //print(statusDataBuffer)
+    //print(CRLF)
     lda status
     cmp #$00
     bne doHandleResponse
@@ -157,33 +159,14 @@ joyState:
 
 blocked:
 .byte $00
-txtUp:
-.text "Up"
-.byte 13,0
-txtDown:
-.text "Down"
-.byte 13,0
-txtLeft:
-.text "Left"
-.byte 13,0
-txtRight:
-.text "Right"
-.byte 13,0
-txtOnlyForU64BasedDevices:
-.text "This software is only for"
-.byte 13
-.text "U64 based devices from Gideon..."
-.byte 13,0
-
-
 
 prepare:{
     lda #00
     sta JOY_OLD
     
-
     lda #$05
     sta $0286
+
     lda #$80
     sta $07F8
     lda #$81
@@ -195,7 +178,6 @@ prepare:{
 
     lda #$00
     sta $d020
-    lda #$00
     sta $d021
 
     lda #$0f
@@ -234,7 +216,6 @@ prepare:{
 
     lda #$0f
     sta $d015 // enable
-    lda #$0f
     sta $d01c // multicolor
     rts
 }
@@ -299,44 +280,8 @@ read:
     sta $0402
     rts
 }
-#import "src/ultimate_dos.asm" 
+#import "src/game/ultimate_dos.asm" 
+#import "src/game/sprites.asm"
+#import "src/game/text.asm" 
 
-.pc = $2000
-sprites:
-arrow_up:
-.byte $00,$00,$00,$00,$20,$00,$00,$a8
-.byte $00,$02,$aa,$00,$03,$a9,$00,$00
-.byte $e4,$00,$00,$20,$00,$00,$10,$00
-.byte $00,$00,$00,$00,$00,$00,$00,$00
-.byte $00,$00,$00,$00,$00,$00,$00,$00
-.byte $00,$00,$00,$00,$00,$00,$00,$00
-.byte $00,$00,$00,$00,$00,$00,$00,$00
-.byte $00,$00,$00,$00,$00,$00,$00,$87
-arrow_left:
-.byte $00,$00,$00,$00,$00,$00,$00,$00
-.byte $00,$00,$00,$00,$00,$00,$00,$00
-.byte $00,$00,$00,$00,$00,$00,$28,$00
-.byte $02,$aa,$aa,$03,$aa,$55,$00,$f9
-.byte $00,$00,$04,$00,$00,$00,$00,$00
-.byte $00,$00,$00,$00,$00,$00,$00,$00
-.byte $00,$00,$00,$00,$00,$00,$00,$00
-.byte $00,$00,$00,$00,$00,$00,$00,$87
-arrow_right:
-.byte $00,$00,$00,$00,$00,$00,$00,$00
-.byte $00,$00,$00,$00,$00,$00,$00,$00
-.byte $00,$00,$00,$00,$00,$00,$28,$00
-.byte $aa,$aa,$00,$15,$aa,$90,$00,$e5
-.byte $40,$00,$10,$00,$00,$00,$00,$00
-.byte $00,$00,$00,$00,$00,$00,$00,$00
-.byte $00,$00,$00,$00,$00,$00,$00,$00
-.byte $00,$00,$00,$00,$00,$00,$00,$87
-arrow_down:
-.byte $00,$00,$00,$00,$00,$00,$00,$00
-.byte $00,$00,$20,$00,$00,$20,$00,$00
-.byte $20,$00,$00,$20,$00,$00,$20,$00
-.byte $00,$20,$00,$00,$a8,$00,$00,$a8
-.byte $00,$00,$a8,$00,$02,$aa,$00,$02
-.byte $aa,$00,$0a,$aa,$80,$0a,$aa,$80
-.byte $0e,$aa,$40,$03,$a9,$00,$00,$e4
-.byte $00,$00,$10,$00,$00,$00,$00,$87
 

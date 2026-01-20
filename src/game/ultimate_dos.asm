@@ -49,10 +49,10 @@ uppercase: .byte 00
 }
 
 checkTurboMode:{
-    lda $d031
+    lda $d030
     cmp #$ff
     beq notAvailable
-    lda $d031
+    lda $d030
     and #$0f
     cmp #$00
     beq turboOff
@@ -96,22 +96,6 @@ checked:
     rts
 }
 
-txtTurboModeNotActivatable:
-.text "Turbo mode not activatable"
-.byte 13,0
-txtTurboOn:
-.text "Turbo [ON]"
-.byte 13,0
-txtTurboOff:
-.text "Turbo [OFF]"
-.byte 13,0
-txtConnectSocket:
-.text "Connect Socket"
-.byte 13,0
-txtWriteSocket:
-.text "Write Socket"
-.byte 13,0
-
 connectTcpSocket:{
     //print(txtConnectTcpSocket)
     sendCommand(NET_CMD_TCP_SOCKET_CONNECT,NET_CMD_TCP_SOCKET_CONNECT_END)
@@ -127,7 +111,11 @@ connectTcpSocket:{
 }
 NET_CMD_TCP_SOCKET_CONNECT:
 .byte $03,$07,$86,$fc
-.text "10.100.200.227"
+#if LOCAL
+    .text "10.100.200.227"
+#else
+    .text "maschine1.de"
+#endif
 .byte 0
 NET_CMD_TCP_SOCKET_CONNECT_END:
 
@@ -148,8 +136,11 @@ connectUdpSocket:{
 }
 NET_CMD_UDP_SOCKET_CONNECT:
     .byte $03,$08,$86,$fc
-    //.text "10.100.200.227"
+#if LOCAL
+    .text "10.100.200.227"
+#else
     .text "maschine1.de"
+#endif
     .byte 0
 NET_CMD_UDP_SOCKET_CONNECT_END:
 counter: .byte 0
@@ -278,10 +269,7 @@ loop:
 commandLength: .word 0
 
 _sendCommand:{
-    //jsr waitFrame
-    lda CONTROL_REG
-    ora #$04
-    sta CONTROL_REG
+    jsr abort
     
     //log(txtPrepare)    
     lda #$00
@@ -338,17 +326,19 @@ writeCommand:
     jmp writeCommand
 pushCommand:
     //log(txtPush)
-    lda CONTROL_REG
+    /*lda CONTROL_REG
     ora #%00000001 // push command
+    sta CONTROL_REG
+    */
+    lda #$01
+    sta CONTROL_REG
     sta CONTROL_REG
 checkForError:
     lda STATUS_REG
     and #%00000100
     beq noError
     //log(txtErrorAbort)
-    lda CONTROL_REG
-    ora #%00001000 // reset error
-    sta CONTROL_REG
+    jsr resetError
     jmp _sendCommand
 noError:
 waitBusyClear: 
@@ -362,12 +352,21 @@ exit:
     //jsr logStatus
     rts
 }
-txtWaitBusyClear:
-.text "WAIT BUSY CLEAR"
-.byte 13,0
-txtWaitForIdle:
-.text "WAIT FOR IDLE"
-.byte 13,0
+
+abort:{
+    lda CONTROL_REG
+    ora #%00000100 //abort last command
+    sta CONTROL_REG
+    rts
+}
+
+resetError:{
+    lda CONTROL_REG
+    ora #%00001000 // reset error
+    sta CONTROL_REG
+    rts
+}
+
 //.align $100
 readData:{
     //log(txtRead)
@@ -437,32 +436,8 @@ loop:
     bne loop
     rts
 }
-wait1:
-    ldy #$ff
-wl1:
-    dey
-    bne wl1
-wait2:   
-    ldy #$ff
-wl2:
-    dey
-    bne wl2
-wait3:
-    ldy #$ff
-wl3:
-    dey
-    bne wl3
-wait4:
-    ldy #$ff
-wl4:
-    dey
-    bne wl4
-    rts
 
-CLEAR_HOME_CASE:
-.byte $93,$0e,0
-CRLF:
-.byte 13,0
+
 .align $100
 dataBuffer:
 .fill $ff,0
