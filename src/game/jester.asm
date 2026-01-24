@@ -1,5 +1,5 @@
 #define DEBUG
-#define REMOTE
+#define LOCAL
 #import "src/game/constants.asm" 
 .encoding "petscii_mixed"
 
@@ -145,6 +145,11 @@ checkFire:
     lda joyValue
     and #$10
     bne noAction
+    jsr sendExit
+    jsr handleResponse
+    lda $0400
+    cmp #$ff
+    bne noAction
     jsr closeSocket
     rts
 noAction:
@@ -236,6 +241,8 @@ sendStart:{
 }
 NET_CMD_START:
     .byte $03,$11,$00,$01,$00
+    .text "GUIDO"
+    .byte $00,$00,$00,$00,$00,$00
 NET_CMD_START_END:
 
 sendWalk:{
@@ -255,6 +262,44 @@ sendWalk:{
 NET_CMD_WALK:
     .byte $03,$11,$00,$02,$00
 NET_CMD_WALK_END:
+
+
+sendExit:{
+    lda socket
+    sta NET_CMD_EXIT+2
+    sendCommand(NET_CMD_EXIT,NET_CMD_EXIT_END)
+    jsr readData
+    jsr readStatusData
+    jsr accept
+    //print(dataBuffer+2)
+    //print(statusDataBuffer)
+    //print(CRLF)
+    lda dataBuffer
+    sta status
+    rts
+}
+NET_CMD_EXIT:
+    .byte $03,$11,$00,$03,$00
+NET_CMD_EXIT_END:
+
+
+sendReset:{
+    lda socket
+    sta NET_CMD_RESET+2
+    sendCommand(NET_CMD_RESET,NET_CMD_RESET_END)
+    jsr readData
+    jsr readStatusData
+    jsr accept
+    //print(dataBuffer+2)
+    //print(statusDataBuffer)
+    //print(CRLF)
+    lda dataBuffer
+    sta status
+    rts
+}
+NET_CMD_RESET:
+    .byte $03,$11,$00,$04,$00
+NET_CMD_RESET_END:
 
 responseCount: .byte 00
 handleResponse:{
@@ -283,5 +328,3 @@ read:
 #import "src/game/ultimate_dos.asm" 
 #import "src/game/sprites.asm"
 #import "src/game/text.asm" 
-
-

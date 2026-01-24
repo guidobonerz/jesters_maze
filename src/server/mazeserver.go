@@ -7,9 +7,16 @@ import (
 	"os"
 )
 
+type Player struct {
+	name    string
+	address string
+	port    int
+	x       int
+	y       int
+}
+
 var port = 64646
-var currentX = 0
-var currentY = 0
+var playerNo = 0
 var mazeWidth = 20
 var mazeHeight = 20
 var routeElement = make(map[string]byte)
@@ -34,6 +41,8 @@ var maze1 = [][]string{
 	{"F", "E", "A", "D", "B", "B", "B", "E", "A", "F", "G", "D", "H", "J", "X", "F", "I", "G", "X", "X"},
 	{"X", "A", "F", "G", "X", "D", "B", "G", "F", "B", "B", "G", "X", "M54", "X", "X", "F", "O3", "X", "X"},
 	{"X", "F", "B", "O53", "X", "A1", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X"}}
+
+var players = make(map[string]*Player)
 
 func setupRouteElements() {
 	//                        SOWN
@@ -68,64 +77,83 @@ func main() {
 		os.Exit(1)
 	}
 	defer conn.Close()
+
 	fmt.Printf("UDP-Server started on port %d\nListening...\n", port)
-	buffer := make([]byte, 10)
+	buffer := make([]byte, 30)
 	for {
 		byteCount, clientAddr, err := conn.ReadFromUDP(buffer)
 		if err != nil {
 			log.Println("Failed to receive:", err)
 			continue
 		}
-
+		var playerAddress = clientAddr.String()
 		log.Printf("%d bytes received / %v\n", byteCount, buffer)
 		if byteCount > 0 {
 			switch buffer[0] {
 			case 1:
 				{
-					log.Println("Start")
-					payload := getStartDirections()
-					log.Printf("%d bytes send / %v\n", len(payload), payload)
-					_, err = conn.WriteToUDP(payload, clientAddr)
-					if err != nil {
-						log.Println("Failed to send:", err)
+					name := ""
+					for i := 2; buffer[i] != 0; i++ {
+						if buffer[i] != 0x20 {
+							buffer[i] -= 0x80
+						}
+						name = string(append([]byte(name), buffer[i]))
+					}
+
+					if _, ok := players[playerAddress]; !ok {
+						players[playerAddress] = &Player{
+							address: playerAddress,
+							x:       0,
+							y:       0,
+						}
+						playerNo++
+						players[playerAddress].name = name
+						payload := getStartDirections(players[playerAddress])
+						payload = fmt.Appendf(payload, "%s", players[playerAddress].name)
+						log.Printf("%d bytes send / %v\n", len(payload), payload)
+						_, err = conn.WriteToUDP(payload, clientAddr)
+						if err != nil {
+							log.Println("Failed to send:", err)
+						}
+						log.Printf("Welcome %s to the maze", name)
+						log.Printf("Start: %s - x: %d, y: %d\n", players[playerAddress].address, players[playerAddress].x, players[playerAddress].y)
 					}
 				}
 			case 2:
 				{
-					log.Println("Walk")
 					switch buffer[1] {
 					case 78: // North
 						{
-							if currentY-1 >= 0 {
-								currentY--
+							if players[playerAddress].y-1 >= 0 {
+								players[playerAddress].y--
 							}
 						}
 					case 83: // South
 						{
-							if currentY+1 < mazeHeight {
-								currentY++
+							if players[playerAddress].y+1 < mazeHeight {
+								players[playerAddress].y++
 							}
 						}
 					case 87: //West
 						{
-							if currentX-1 >= 0 {
-								currentX--
+							if players[playerAddress].x-1 >= 0 {
+								players[playerAddress].x--
 							}
 						}
 					case 69: //East
 						{
-							if currentX+1 < mazeWidth {
-								currentX++
+							if players[playerAddress].x+1 < mazeWidth {
+								players[playerAddress].x++
 							}
 						}
 					}
-					log.Printf("x: %d, y: %d\n", currentX, currentY)
-					payload := getDirections(currentX, currentY)
+					log.Printf("Walk: %s - x: %d, y: %d\n", players[playerAddress].address, players[playerAddress].x, players[playerAddress].y)
+					payload := getDirections(players[playerAddress])
 					payload[2] = 0
-					if checkExit(currentX, currentY) {
+					if checkExit(players[playerAddress]) {
 						payload[2] = 2
 					}
-					if checkStart(currentX, currentY) {
+					if checkStart(players[playerAddress]) {
 						payload[2] = 1
 					}
 
@@ -135,35 +163,44 @@ func main() {
 						log.Println("Failed to send:", err)
 					}
 				}
+			case 3:
+				{
+					payload := []byte{0xff} //exit
+					log.Printf("%d bytes send / %v\n", len(payload), payload)
+					_, err = conn.WriteToUDP(payload, clientAddr)
+					if err != nil {
+						log.Println("Failed to send:", err)
+					}
+					log.Printf("%s left the maze\n", players[playerAddress].name)
+				}
 			}
 		}
 	}
 }
-func checkExit(x int, y int) bool {
-	cell := maze1[y][x]
+func checkExit(player *Player) bool {
+	cell := maze1[player.x][player.y]
 	if len(cell) > 1 && cell[1:2] == "2" {
 		log.Printf("Congratulations, you have mastered Jester's Maze\n")
 		return true
 	}
 	return false
 }
-func checkStart(x int, y int) bool {
+func checkStart(player *Player) bool {
 
-	cell := maze1[y][x]
+	cell := maze1[player.y][player.x]
 	if len(cell) > 1 && cell[1:2] == "1" {
 		log.Printf("You're on Start again\n")
 		return true
 	}
 	return false
 }
-func getStartDirections() []byte {
+func getStartDirections(player *Player) []byte {
 	for y, row := range maze1 {
 		for x, cell := range row {
 			if len(cell) > 1 && cell[1:2] == "1" {
 				var dir = routeElement[cell[0:1]]
-				currentX = x
-				currentY = y
-				log.Printf("x: %d, y: %d\n", currentX, currentY)
+				player.x = x
+				player.y = y
 				return []byte{dir, 0, 1}
 			}
 		}
@@ -171,13 +208,13 @@ func getStartDirections() []byte {
 	return nil
 }
 
-func getDirections(x int, y int) []byte {
-	cell := maze1[y][x]
+func getDirections(player *Player) []byte {
+	cell := maze1[player.y][player.x]
 	if len(cell) > 0 {
 		log.Printf("%s\n", cell)
 		var dir = routeElement[cell[0:1]]
-		currentX = x
-		currentY = y
+		//	currentX = x
+		//	currentY = y
 		return []byte{dir, 0, 0}
 	}
 	return nil
