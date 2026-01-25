@@ -44,6 +44,60 @@ doSendStart:
 doHandleResponse:
     jsr handleResponse
 loop:
+    lda $dc02
+    pha
+    lda $dc03  
+    pha
+    
+    lda #$ff
+    sta $dc02
+    lda #$00
+    sta $dc03
+    
+    lda #%11111110
+    sta $dc00
+    nop
+    nop
+    lda $dc01
+    sta kr0
+  
+    lda #%01111111
+    sta $dc00
+    nop
+    nop
+    lda $dc01
+    sta kr7
+    lda #$ff
+    sta $dc00
+    pla
+    sta $dc03
+    pla  
+    sta $dc02
+
+checkUp:
+    lda kr0
+    and #%00010000 // F1
+    bne checkDown
+    lda #$07
+    sta $d020
+    //jsr goUp
+    jmp noAction
+checkDown:
+    lda kr0
+    and #%00001000 // F7
+    bne checkReset
+    lda #$08
+    sta $d020
+    //jsr goUp
+    jmp noAction    
+checkReset:
+    lda kr7
+    and #%10000000 // Run/Stop
+    bne checkJoystick
+    jsr sendReset
+    jsr handleResponse
+checkJoystick:
+
     lda #$0c
     sta $d027 //n
     sta $d028 //w
@@ -152,6 +206,7 @@ checkFire:
     bne noAction
     jsr closeSocket
     rts
+
 noAction:
 exit:
     jmp loop
@@ -325,6 +380,11 @@ read:
     sta $0402
     rts
 }
+kr0:
+    .byte $00
+kr7:
+    .byte $00
+
 #import "src/game/ultimate_dos.asm" 
 #import "src/game/sprites.asm"
 #import "src/game/text.asm" 

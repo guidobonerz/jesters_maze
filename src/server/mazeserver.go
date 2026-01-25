@@ -90,7 +90,7 @@ func main() {
 		log.Printf("%d bytes received / %v\n", byteCount, buffer)
 		if byteCount > 0 {
 			switch buffer[0] {
-			case 1:
+			case 1: // register new player
 				{
 					name := ""
 					for i := 2; buffer[i] != 0; i++ {
@@ -119,7 +119,7 @@ func main() {
 						log.Printf("Start: %s - x: %d, y: %d\n", players[playerAddress].address, players[playerAddress].x, players[playerAddress].y)
 					}
 				}
-			case 2:
+			case 2: // walk
 				{
 					switch buffer[1] {
 					case 78: // North
@@ -163,7 +163,7 @@ func main() {
 						log.Println("Failed to send:", err)
 					}
 				}
-			case 3:
+			case 3: // exit
 				{
 					payload := []byte{0xff} //exit
 					log.Printf("%d bytes send / %v\n", len(payload), payload)
@@ -173,7 +173,19 @@ func main() {
 					}
 					log.Printf("%s left the maze\n", players[playerAddress].name)
 				}
+			case 4: // reset to start
+				{
+					payload := getStartDirections(players[playerAddress])
+					payload[2] = 1
+
+					log.Printf("%d bytes send / %v\n", len(payload), payload)
+					_, err = conn.WriteToUDP(payload, clientAddr)
+					if err != nil {
+						log.Println("Failed to send:", err)
+					}
+				}
 			}
+
 		}
 	}
 }
