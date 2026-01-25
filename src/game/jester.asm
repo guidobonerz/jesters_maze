@@ -19,7 +19,7 @@ start:
     print(txtOnlyForU64BasedDevices)
     rts
 isU64:
-    jsr prepare
+    
     //print(txtConnectSocket)
     //print(CRLF)
     jsr connectUdpSocket
@@ -60,6 +60,7 @@ doSendStart:
     rts
 doHandleResponse:
     jsr handleResponse
+    jsr prepare
 loop:
     lda $dc02
     pha
@@ -101,6 +102,9 @@ checkExit:
     lda $0400
     cmp #$ff
     bne checkReset
+    lda #$00
+    sta $d015 // enable
+    sta $d01c // multicolor
     jsr closeSocket
     rts
 checkReset:
