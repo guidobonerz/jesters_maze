@@ -27,9 +27,26 @@ isU64:
     //print(CRLF)
     lda socket
     cmp #$00
-    bne doSendStart
+    bne typePlayerName
     jsr closeSocket
     rts
+typePlayerName:
+    print(txtPlayerName)
+    jsr clearInput
+inputLoop:
+    jsr inputString
+    ldx #$00
+displayLoop:
+    cpx inputLength
+    beq displayDone
+    lda inputBuffer,x
+    sta NET_CMD_START+5,x
+    sta $0428,x
+    inx
+    jmp displayLoop
+displayDone:
+    lda inputComplete
+    beq inputLoop
 doSendStart:
     //print(txtWriteSocket)
     //print(CRLF)
@@ -54,12 +71,12 @@ loop:
     lda #$00
     sta $dc03
     
-    lda #%11111110
+    lda #%11111011
     sta $dc00
     nop
     nop
     lda $dc01
-    sta kr0
+    sta kr2
   
     lda #%01111111
     sta $dc00
@@ -74,33 +91,32 @@ loop:
     pla  
     sta $dc02
 
-checkUp:
-    lda kr0
-    and #%00010000 // F1
-    bne checkDown
-    lda #$07
-    sta $d020
-    jsr sendGoUp
-    jsr handleResponse
-    jmp noAction
-checkDown:
-    lda kr0
-    and #%00001000 // F7
-    bne checkReset
-    lda #$08
-    sta $d020
-    jsr sendGoDown
-    jsr handleResponse
-    jmp noAction    
-checkReset:
+checkExit:
     lda kr7
-    and #%10000000 // Run/Stop
+    and #%10000000 // Run/Stop - Exit & Disconnect
+    bne checkReset
+    jsr sendExit
+    jsr handleResponse
+    lda $0400
+    cmp #$ff
+    bne checkReset
+    jsr closeSocket
+    rts
+checkReset:
+    lda kr2
+    and #%00000010 // (R)eset
+    beq keyIsPressed
+    lda #$00
+    sta keyPressed
+    jmp checkJoystick
+keyIsPressed:
+    lda keyPressed
     bne checkJoystick
+    lda #$01
+    sta keyPressed
     jsr sendReset
     jsr handleResponse
-    jmp noAction
 checkJoystick:
-
     lda #$0c
     sta $d027 //n
     sta $d028 //w
@@ -152,64 +168,90 @@ setState:
     jmp exit
 checkNorth:
     lda joyValue
-    and #$01
+    cmp #$1e
     bne checkSouth
     lda $0400
     and #%0000001
     beq checkSouth
-    lda #78  //'N'
+    lda #78  //'N' North
     sta NET_CMD_WALK+4
     jsr sendWalk
     jsr handleResponse
     jmp noAction
 checkSouth:
     lda joyValue
-    and #$02
+    cmp #$1d
     bne checkWest
     lda $0400
     and #%0001000
     beq checkWest
-    lda #83//'S'
+    lda #83//'S' South
     sta NET_CMD_WALK+4
     jsr sendWalk
     jsr handleResponse
     jmp noAction
 checkWest:
     lda joyValue
-    and #$04
+    cmp #$1b
     bne checkEast
     lda $0400
     and #%0000010
     beq checkEast
-    lda #87//'W'
+    lda #87//'W' West
     sta NET_CMD_WALK+4
     jsr sendWalk
     jsr handleResponse
     jmp noAction
 checkEast:
     lda joyValue
-    and #$08
-    bne checkFire
+    cmp #$17
+    bne checkNorthFire
     lda $0400
     and #%0000100
-    beq checkFire
-    lda #69//'E'
+    beq checkNorthFire
+    lda #69//'E' East
     sta NET_CMD_WALK+4
     jsr sendWalk
     jsr handleResponse
     jmp noAction
+checkNorthFire:
+    lda joyValue
+    cmp #$0e
+    bne checkSouthFire
+    //lda $0400
+    //and #%0000100
+    //beq checkSouthFire
+    lda #85//'U' Up
+    sta NET_CMD_WALK+4
+    inc $d020
+    jsr sendWalk
+    jsr handleResponse
+    jmp noAction
+checkSouthFire:
+    lda joyValue
+    cmp #$0d
+    bne noAction
+    //lda $0400
+    //and #%0000100
+    //beq noAction
+    lda #68//'D' Down
+    sta NET_CMD_WALK+4
+    jsr sendWalk
+    jsr handleResponse
+    jmp noAction
+/*
 checkFire:
     lda joyValue
     and #$10
     bne noAction
-    jsr sendExit
-    jsr handleResponse
+    //jsr sendExit
+    //jsr handleResponse
     lda $0400
     cmp #$ff
     bne noAction
     jsr closeSocket
     rts
-
+*/
 noAction:
 exit:
     jmp loop
@@ -300,7 +342,7 @@ sendStart:{
 NET_CMD_START:
     .byte $03,$11,$00,$01,$00
     .text "GUIDO"
-    .byte $00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00
 NET_CMD_START_END:
 
 sendWalk:{
@@ -420,11 +462,85 @@ read:
     sta $0402
     rts
 }
+
+inputString: {
+    jsr $ffe4
+    cmp #$00
+    beq done
+    sta lastKey
+    cmp #$0d
+    beq inputDone
+    cmp #$14
+    beq doDelete
+    lda inputLength
+    cmp inputMaxLen
+    beq done
+    lda lastKey
+    cmp #$30
+    bcc done
+    cmp #$3a
+    bcc addChar
+    cmp #$41
+    bcc done
+    cmp #$5b
+    bcc addChar
+    jmp done
+addChar:
+    ldx inputLength
+    sta inputBuffer,x
+    inc inputLength
+    jmp done
+doDelete:
+    lda inputLength
+    beq done
+    dec inputLength
+    ldx inputLength
+    lda #$00
+    sta inputBuffer,x
+    jmp done
+inputDone:
+    lda #$01
+    sta inputComplete
+done:
+    rts
+}
+
+clearInput: {
+    lda #$00
+    sta inputLength
+    sta inputComplete
+    ldx #$00
+clearLoop:
+    sta inputBuffer,x
+    inx
+    cpx inputMaxLen
+    bne clearLoop
+    rts
+}
+
+// Variables
+inputBuffer:
+    .fill 14, $00     // Max 40 characters
+inputLength:
+    .byte $00
+inputMaxLen:
+    .byte 12
+inputComplete:
+    .byte $00
+lastKey:
+    .byte $00
+
 kr0:
+    .byte $00
+kr2:
     .byte $00
 kr7:
     .byte $00
-
+keyPressed:
+    .byte $00
+txtPlayerName:
+    .text "YOUR NAME:"
+    .byte $0d,$00    
 #import "src/game/ultimate_dos.asm" 
 #import "src/game/sprites.asm"
 #import "src/game/text.asm" 
