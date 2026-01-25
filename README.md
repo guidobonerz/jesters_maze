@@ -21,6 +21,6 @@ TODO's
 - Sound
 - Several Mazes
 
-![PotentialTitleScreen][<img src="doc/jesters_maze_title.jpg">]
-![CaveHandDrawing][<img src="doc/jesters_maze_hand_drawing.png">]
+[<img src="doc/jesters_maze_title.jpg">]
+[<img src="doc/jesters_maze_hand_drawing.png">]
 
