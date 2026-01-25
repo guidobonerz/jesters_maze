@@ -183,6 +183,34 @@ func main() {
 					if err != nil {
 						log.Println("Failed to send:", err)
 					}
+					log.Printf("%s reset to start\n", players[playerAddress].name)
+				}
+			case 5: // go level up
+				{
+					/*
+						payload := getStartDirections(players[playerAddress])
+						payload[2] = 1
+
+						log.Printf("%d bytes send / %v\n", len(payload), payload)
+						_, err = conn.WriteToUDP(payload, clientAddr)
+						if err != nil {
+							log.Println("Failed to send:", err)
+						}
+					*/
+					log.Printf("%s climbs up\n", players[playerAddress].name)
+				}
+			case 6: // go level down
+				{
+					/*
+						payload := getStartDirections(players[playerAddress])
+						payload[2] = 1
+
+						log.Printf("%d bytes send / %v\n", len(payload), payload)
+						_, err = conn.WriteToUDP(payload, clientAddr)
+						if err != nil {
+							log.Println("Failed to send:", err)
+						}*/
+					log.Printf("%s climbs down\n", players[playerAddress].name)
 				}
 			}
 

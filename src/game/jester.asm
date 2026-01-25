@@ -80,7 +80,8 @@ checkUp:
     bne checkDown
     lda #$07
     sta $d020
-    //jsr goUp
+    jsr sendGoUp
+    jsr handleResponse
     jmp noAction
 checkDown:
     lda kr0
@@ -88,7 +89,8 @@ checkDown:
     bne checkReset
     lda #$08
     sta $d020
-    //jsr goUp
+    jsr sendGoDown
+    jsr handleResponse
     jmp noAction    
 checkReset:
     lda kr7
@@ -96,6 +98,7 @@ checkReset:
     bne checkJoystick
     jsr sendReset
     jsr handleResponse
+    jmp noAction
 checkJoystick:
 
     lda #$0c
@@ -355,6 +358,43 @@ sendReset:{
 NET_CMD_RESET:
     .byte $03,$11,$00,$04,$00
 NET_CMD_RESET_END:
+
+
+sendGoUp:{
+    lda socket
+    sta NET_CMD_UP+2
+    sendCommand(NET_CMD_UP,NET_CMD_UP_END)
+    jsr readData
+    jsr readStatusData
+    jsr accept
+    //print(dataBuffer+2)
+    //print(statusDataBuffer)
+    //print(CRLF)
+    lda dataBuffer
+    sta status
+    rts
+}
+NET_CMD_UP:
+    .byte $03,$11,$00,$05,$00
+NET_CMD_UP_END:
+
+sendGoDown:{
+    lda socket
+    sta NET_CMD_DOWN+2
+    sendCommand(NET_CMD_DOWN,NET_CMD_DOWN_END)
+    jsr readData
+    jsr readStatusData
+    jsr accept
+    //print(dataBuffer+2)
+    //print(statusDataBuffer)
+    //print(CRLF)
+    lda dataBuffer
+    sta status
+    rts
+}
+NET_CMD_DOWN:
+    .byte $03,$11,$00,$06,$00
+NET_CMD_DOWN_END:
 
 responseCount: .byte 00
 handleResponse:{
