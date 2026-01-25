@@ -9,3 +9,18 @@ It is compiled with:
 go build -trimpath -ldflags "-w -s"
 
 After starting, the server listens on port 64646.
+
+
+Function Keys used in the game:
+- F1 - reset to start
+- F7 - exit game (disconnect from server)
+
+
+TODO's
+- Graphic screens (Currently I have only basic ideas)
+- Sound
+- Several Mazes
+
+![PotentialTitleScreen][<img src="doc/jesters_maze_title.jpg">]
+![CaveHandDrawing][<img src="doc/jesters_maze_hand_drawing.jpg">]
+
