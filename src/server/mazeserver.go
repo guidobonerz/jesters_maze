@@ -47,8 +47,7 @@ var maze1 = [][][]string{{
 var players = make(map[string]*Player)
 
 func setupRouteElements() {
-	//                         DRLU
-	//                         RLDU
+	//                       DUEWSN
 	routeElement["AX"] = 0b00000011 // │
 	routeElement["BX"] = 0b00001100 // ─
 	routeElement["CX"] = 0b00001111 // ┼
