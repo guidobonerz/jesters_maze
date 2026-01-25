@@ -21,6 +21,6 @@ TODO's
 - Sound
 - Several Mazes
 
-[<img src="doc/jesters_maze_title.jpg">]
+[<img src="doc/jesters_maze_title.png">]
 [<img src="doc/jesters_maze_hand_drawing.png">]
 
