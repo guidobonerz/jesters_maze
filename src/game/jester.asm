@@ -71,19 +71,20 @@ loop:
     lda #$00
     sta $dc03
     
-    lda #%11111011
+    lda #$fe
     sta $dc00
     nop
     nop
     lda $dc01
-    sta kr2
-  
+    sta kr0
+  /*
     lda #%01111111
     sta $dc00
     nop
     nop
     lda $dc01
     sta kr7
+    */
     lda #$ff
     sta $dc00
     pla
@@ -92,8 +93,8 @@ loop:
     sta $dc02
 
 checkExit:
-    lda kr7
-    and #%10000000 // Run/Stop - Exit & Disconnect
+    lda kr0
+    and #$08 // F7 - Exit & Disconnect
     bne checkReset
     jsr sendExit
     jsr handleResponse
@@ -103,8 +104,8 @@ checkExit:
     jsr closeSocket
     rts
 checkReset:
-    lda kr2
-    and #%00000010 // (R)eset
+    lda kr0
+    and #$10 // F1 - Reset
     beq keyIsPressed
     lda #$00
     sta keyPressed

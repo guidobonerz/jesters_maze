@@ -44,25 +44,91 @@ var maze1 = [][][]string{{
 	{"XX00", "AX00", "FX00", "GX00", "XX00", "DX00", "BX00", "GX00", "FX00", "BX00", "BX00", "GX00", "XX00", "MX54", "XX00", "XX00", "FX00", "OX30", "XX00", "XX00"},
 	{"XX00", "FX00", "BX00", "OX53", "XX00", "AX10", "XX00", "XX00", "XX00", "XX00", "XX00", "XX00", "XX00", "XX00", "XX00", "XX00", "XX00", "XX00", "XX00", "XX00"}}}
 
+// routeelement format
+// AABC
+// AA= path tile
+// B = tile type (1=START, 2=END, 3=TREASURE, 4=LAMP OIL, 5=KEY, 6=GATE, 7=RIDDLE)
+// C = NUMBER OF KEY or GATE
+
 var players = make(map[string]*Player)
 
 func setupRouteElements() {
 	//                       DUEWSN
 	routeElement["AX"] = 0b00000011 // │
+	routeElement["AU"] = 0b00010011 // │
+	routeElement["AD"] = 0b00100011 // │
+	routeElement["AB"] = 0b00110011 // │
+
 	routeElement["BX"] = 0b00001100 // ─
+	routeElement["BU"] = 0b00011100 // ─
+	routeElement["BD"] = 0b00101100 // ─
+	routeElement["BB"] = 0b00111100 // ─
+
 	routeElement["CX"] = 0b00001111 // ┼
+	routeElement["CU"] = 0b00011111 // ┼
+	routeElement["CD"] = 0b00101111 // ┼
+	routeElement["CB"] = 0b00111111 // ┼
+
 	routeElement["DX"] = 0b00001010 // ┌
+	routeElement["DU"] = 0b00011010 // ┌
+	routeElement["DD"] = 0b00101010 // ┌
+	routeElement["DB"] = 0b00111010 // ┌
+
 	routeElement["EX"] = 0b00000110 // ┐
+	routeElement["EU"] = 0b00010110 // ┐
+	routeElement["ED"] = 0b00100110 // ┐
+	routeElement["EB"] = 0b00110110 // ┐
+
 	routeElement["FX"] = 0b00001001 // └
+	routeElement["FU"] = 0b00011001 // └
+	routeElement["FD"] = 0b00101001 // └
+	routeElement["FB"] = 0b00111001 // └
+
 	routeElement["GX"] = 0b00000101 // ┘
+	routeElement["GU"] = 0b00010101 // ┘
+	routeElement["GD"] = 0b00100101 // ┘
+	routeElement["GB"] = 0b00110101 // ┘
+
 	routeElement["HX"] = 0b00001101 // ┴
+	routeElement["HU"] = 0b00011101 // ┴
+	routeElement["HD"] = 0b00101101 // ┴
+	routeElement["HB"] = 0b00111101 // ┴
+
 	routeElement["IX"] = 0b00001110 // ┬
+	routeElement["IU"] = 0b00011110 // ┬
+	routeElement["ID"] = 0b00101110 // ┬
+	routeElement["IB"] = 0b00111110 // ┬
+
 	routeElement["JX"] = 0b00000111 // ┤
+	routeElement["JU"] = 0b00010111 // ┤
+	routeElement["JD"] = 0b00100111 // ┤
+	routeElement["JB"] = 0b00110111 // ┤
+
 	routeElement["KX"] = 0b00001011 // ├
+	routeElement["KU"] = 0b00011011 // ├
+	routeElement["KD"] = 0b00101011 // ├
+	routeElement["KB"] = 0b00111011 // ├
+
 	routeElement["LX"] = 0b00000010 // dead north
+	routeElement["LU"] = 0b00010010 // dead north
+	routeElement["LD"] = 0b00100010 // dead north
+	routeElement["LB"] = 0b00110010 // dead north
+
 	routeElement["MX"] = 0b00000001 // dead south
+	routeElement["MU"] = 0b00010001 // dead south
+	routeElement["MD"] = 0b00100001 // dead south
+	routeElement["MB"] = 0b00110001 // dead south
+
 	routeElement["NX"] = 0b00001000 // dead west
+	routeElement["NU"] = 0b00011000 // dead west
+	routeElement["ND"] = 0b00101000 // dead west
+	routeElement["NB"] = 0b00111000 // dead west
+
 	routeElement["OX"] = 0b00000100 // dead east
+	routeElement["OU"] = 0b00010100 // dead east
+	routeElement["OD"] = 0b00100100 // dead east
+	routeElement["OB"] = 0b00110100 // dead east
+
 	routeElement["XX"] = 0b00000000 // empty
 }
 func main() {
@@ -161,7 +227,6 @@ func main() {
 								players[playerAddress].z++
 								log.Println("Up")
 							}
-							//log.Printf("%s climbs up, floor: %d\n", players[playerAddress].name, players[playerAddress].z)
 						}
 					case 68: //Down
 						{
@@ -169,7 +234,6 @@ func main() {
 								players[playerAddress].z--
 								log.Println("Down")
 							}
-							//log.Printf("%s climbs down, floor: %d\n", players[playerAddress].name, players[playerAddress].z)
 						}
 					}
 					log.Printf("Walk: %s - x: %d, y: %d, z: %d\n", players[playerAddress].address, players[playerAddress].x, players[playerAddress].y, players[playerAddress].z)
