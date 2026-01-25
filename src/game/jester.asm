@@ -125,28 +125,28 @@ checkJoystick:
    
 n:
     lda $0400
-    and #%0000001
-    beq w
+    and #%00000001
+    beq s
     lda #$07
     sta $d027
+s:
+    lda $0400
+    and #%00000010
+    beq w
+    lda #$07
+    sta $d02a
 w:
     lda $0400
-    and #%0000010
+    and #%00000100
     beq e
     lda #$07
     sta $d028
 e:
     lda $0400
-    and #%0000100
-    beq s
-    lda #$07
-    sta $d029
-s:
-    lda $0400
-    and #%0001000
+    and #%00001000
     beq a
     lda #$07
-    sta $d02a
+    sta $d029
     
 a:
     lda $0402
@@ -171,7 +171,7 @@ checkNorth:
     cmp #$1e
     bne checkSouth
     lda $0400
-    and #%0000001
+    and #%00000001
     beq checkSouth
     lda #78  //'N' North
     sta NET_CMD_WALK+4
@@ -183,7 +183,7 @@ checkSouth:
     cmp #$1d
     bne checkWest
     lda $0400
-    and #%0001000
+    and #%00000010
     beq checkWest
     lda #83//'S' South
     sta NET_CMD_WALK+4
@@ -195,7 +195,7 @@ checkWest:
     cmp #$1b
     bne checkEast
     lda $0400
-    and #%0000010
+    and #%00000100
     beq checkEast
     lda #87//'W' West
     sta NET_CMD_WALK+4
@@ -207,7 +207,7 @@ checkEast:
     cmp #$17
     bne checkNorthFire
     lda $0400
-    and #%0000100
+    and #%00001000
     beq checkNorthFire
     lda #69//'E' East
     sta NET_CMD_WALK+4

@@ -23,47 +23,48 @@ var mazeDepth = 20
 var mazeHeight = 3
 var routeElement = make(map[string]byte)
 var maze1 = [][][]string{{
-	{"X", "L3", "X", "X", "X", "X", "X", "X", "A2", "X", "X", "D", "B", "B", "B", "B", "E", "N3", "E", "X"},
-	{"X", "F", "B", "I", "B", "B", "B", "O", "F", "B", "B", "G", "X", "D", "B", "E", "F", "E", "A", "X"},
-	{"X", "L4", "X", "F", "E", "X", "D", "B", "I", "B", "E", "X", "L4", "F", "E", "A", "X", "A", "A", "X"},
-	{"X", "K", "B", "B", "H", "B", "G", "X", "A", "D", "G", "X", "K", "B", "G", "A", "X", "A", "A", "X"},
-	{"X", "A63", "X", "X", "N", "B", "B", "E", "A", "F", "B", "B", "G", "X", "X", "F", "B", "G", "A", "X"},
-	{"X", "A", "D", "B", "B", "B", "E", "F", "H", "E", "D", "O3", "X", "N", "B", "B", "B", "E", "A", "X"},
-	{"X", "F", "G", "X", "D", "B", "G", "X", "X", "F", "G", "X", "D", "I", "B", "B", "E", "F", "H", "E"},
-	{"X", "A", "X", "L3", "A", "X", "X", "X", "D", "O", "D", "E", "A62", "A", "X", "X", "A", "X", "D", "G"},
-	{"X", "A", "X", "A", "F", "B", "B", "I", "E", "X", "A", "F", "G", "F", "B", "E", "A", "D", "G", "X"},
-	{"D", "H", "B", "H", "B", "E", "L", "M4", "A", "D", "G", "X", "D", "B", "B", "G", "A", "K", "B", "E"},
-	{"F", "E", "X", "X", "X", "K", "G", "X", "F", "G", "X", "X", "M52", "X", "D", "E", "A", "F", "E", "M"},
-	{"X", "M", "D", "B", "I", "H", "B", "B", "O", "X", "D", "I", "B", "B64", "G", "A", "A", "X", "A", "X"},
-	{"X", "D", "G", "X", "M", "X", "X", "X", "X", "X", "A", "A", "X", "X", "D", "G", "A", "N4", "J", "X"},
-	{"N4", "J", "X", "L", "X", "D", "B61", "B", "E", "X", "A", "F", "E", "X", "F", "B", "G", "X", "A", "X"},
-	{"X", "A", "D", "H", "B", "G", "X", "X", "A", "X", "K", "O4", "A", "X", "X", "X", "D", "B", "G", "X"},
-	{"X", "A", "A", "X", "D", "O51", "L", "X", "F", "B", "G", "X", "K", "O4", "D", "E", "F", "I", "E", "X"},
-	{"D", "G", "K", "B", "G", "X", "F", "B", "I", "E", "D", "B", "J", "D", "G", "A", "X", "A", "M", "X"},
-	{"F", "E", "A", "D", "B", "B", "B", "E", "A", "F", "G", "D", "H", "J", "X", "F", "I", "G", "X", "X"},
-	{"X", "A", "F", "G", "X", "D", "B", "G", "F", "B", "B", "G", "X", "M54", "X", "X", "F", "O3", "X", "X"},
-	{"X", "F", "B", "O53", "X", "A1", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X"}}}
+	{"XX00", "LX30", "XX00", "XX00", "XX00", "XX00", "XX00", "XX00", "AX20", "XX00", "XX00", "DX00", "BX00", "BX00", "BX00", "BX00", "EX00", "NX30", "EX00", "XX00"},
+	{"XX00", "FX00", "BX00", "IX00", "BX00", "BX00", "BX00", "OX00", "FX00", "BX00", "BX00", "GX00", "XX00", "DX00", "BX00", "EX00", "FX00", "EX00", "AX00", "XX00"},
+	{"XX00", "LX40", "XX00", "FX00", "EX00", "XX00", "DX00", "BX00", "IX00", "BX00", "EX00", "XX00", "LX40", "FX00", "EX00", "AX00", "XX00", "AX00", "AX00", "XX00"},
+	{"XX00", "KX00", "BX00", "BX00", "HX00", "BX00", "GX00", "XX00", "AX00", "DX00", "GX00", "XX00", "KX00", "BX00", "GX00", "AX00", "XX00", "AX00", "AX00", "XX00"},
+	{"XX00", "AX63", "XX00", "XX00", "NX00", "BX00", "BX00", "EX00", "AX00", "FX00", "BX00", "BX00", "GX00", "XX00", "XX00", "FX00", "BX00", "GX00", "AX00", "XX00"},
+	{"XX00", "AX00", "DX00", "BX00", "BX00", "BX00", "EX00", "FX00", "HX00", "EX00", "DX00", "OX30", "XX00", "NX00", "BX00", "BX00", "BX00", "EX00", "AX00", "XX00"},
+	{"XX00", "FX00", "GX00", "XX00", "DX00", "BX00", "GX00", "XX00", "XX00", "FX00", "GX00", "XX00", "DX00", "IX00", "BX00", "BX00", "EX00", "FX00", "HX00", "EX00"},
+	{"XX00", "AX00", "XX00", "LX30", "AX00", "XX00", "XX00", "XX00", "DX00", "OX00", "DX00", "EX00", "AX62", "AX00", "XX00", "XX00", "AX00", "XX00", "DX00", "GX00"},
+	{"XX00", "AX00", "XX00", "AX00", "FX00", "BX00", "BX00", "IX00", "EX00", "XX00", "AX00", "FX00", "GX00", "FX00", "BX00", "EX00", "AX00", "DX00", "GX00", "XX00"},
+	{"DX00", "HX00", "BX00", "HX00", "BX00", "EX00", "LX00", "MX40", "AX00", "DX00", "GX00", "XX00", "DX00", "BX00", "BX00", "GX00", "AX00", "KX00", "BX00", "EX00"},
+	{"FX00", "EX00", "XX00", "XX00", "XX00", "KX00", "GX00", "XX00", "FX00", "GX00", "XX00", "XX00", "MX52", "XX00", "DX00", "EX00", "AX00", "FX00", "EX00", "MX00"},
+	{"XX00", "MX00", "DX00", "BX00", "IX00", "HX00", "BX00", "BX00", "OX00", "XX00", "DX00", "IX00", "BX00", "BX64", "GX00", "AX00", "AX00", "XX00", "AX00", "XX00"},
+	{"XX00", "DX00", "GX00", "XX00", "MX00", "XX00", "XX00", "XX00", "XX00", "XX00", "AX00", "AX00", "XX00", "XX00", "DX00", "GX00", "AX00", "NX40", "JX00", "XX00"},
+	{"N400", "JX00", "XX00", "LX00", "XX00", "DX00", "BX61", "BX00", "EX00", "XX00", "AX00", "FX00", "EX00", "XX00", "FX00", "BX00", "GX00", "XX00", "AX00", "XX00"},
+	{"XX00", "AX00", "DX00", "HX00", "BX00", "GX00", "XX00", "XX00", "AX00", "XX00", "KX00", "OX40", "AX00", "XX00", "XX00", "XX00", "DX00", "BX00", "GX00", "XX00"},
+	{"XX00", "AX00", "AX00", "XX00", "DX00", "OX51", "LX00", "XX00", "FX00", "BX00", "GX00", "XX00", "KX00", "OX40", "DX00", "EX00", "FX00", "IX00", "EX00", "XX00"},
+	{"DX00", "GX00", "KX00", "BX00", "GX00", "XX00", "FX00", "BX00", "IX00", "EX00", "DX00", "BX00", "JX00", "DX00", "GX00", "AX00", "XX00", "AX00", "MX00", "XX00"},
+	{"FX00", "EX00", "AX00", "DX00", "BX00", "BX00", "BX00", "EX00", "AX00", "FX00", "GX00", "DX00", "HX00", "JX00", "XX00", "FX00", "IX00", "GX00", "XX00", "XX00"},
+	{"XX00", "AX00", "FX00", "GX00", "XX00", "DX00", "BX00", "GX00", "FX00", "BX00", "BX00", "GX00", "XX00", "MX54", "XX00", "XX00", "FX00", "OX30", "XX00", "XX00"},
+	{"XX00", "FX00", "BX00", "OX53", "XX00", "AX10", "XX00", "XX00", "XX00", "XX00", "XX00", "XX00", "XX00", "XX00", "XX00", "XX00", "XX00", "XX00", "XX00", "XX00"}}}
 
 var players = make(map[string]*Player)
 
 func setupRouteElements() {
-	//                        SOWN
-	routeElement["A"] = 0b00001001
-	routeElement["B"] = 0b00000110
-	routeElement["C"] = 0b00001111
-	routeElement["D"] = 0b00001100
-	routeElement["E"] = 0b00001010
-	routeElement["F"] = 0b00000101
-	routeElement["G"] = 0b00000011
-	routeElement["H"] = 0b00000111
-	routeElement["I"] = 0b00001110
-	routeElement["J"] = 0b00001011
-	routeElement["K"] = 0b00001101
-	routeElement["L"] = 0b00001000
-	routeElement["M"] = 0b00000001
-	routeElement["N"] = 0b00000100
-	routeElement["O"] = 0b00000010
-	routeElement["X"] = 0b00000000
+	//                         DRLU
+	//                         RLDU
+	routeElement["AX"] = 0b00000011 // │
+	routeElement["BX"] = 0b00001100 // ─
+	routeElement["CX"] = 0b00001111 // ┼
+	routeElement["DX"] = 0b00001010 // ┌
+	routeElement["EX"] = 0b00000110 // ┐
+	routeElement["FX"] = 0b00001001 // └
+	routeElement["GX"] = 0b00000101 // ┘
+	routeElement["HX"] = 0b00001101 // ┴
+	routeElement["IX"] = 0b00001110 // ┬
+	routeElement["JX"] = 0b00000111 // ┤
+	routeElement["KX"] = 0b00001011 // ├
+	routeElement["LX"] = 0b00000010 // dead north
+	routeElement["MX"] = 0b00000001 // dead south
+	routeElement["NX"] = 0b00001000 // dead west
+	routeElement["OX"] = 0b00000100 // dead east
+	routeElement["XX"] = 0b00000000 // empty
 }
 func main() {
 	setupRouteElements()
@@ -215,8 +216,8 @@ func main() {
 	}
 }
 func checkExit(player *Player) bool {
-	cell := maze1[0][player.x][player.y]
-	if len(cell) > 1 && cell[1:2] == "2" {
+	cell := maze1[0][player.y][player.x]
+	if len(cell) > 1 && cell[2:3] == "2" {
 		log.Printf("Congratulations, you have mastered Jester's Maze\n")
 		return true
 	}
@@ -225,7 +226,7 @@ func checkExit(player *Player) bool {
 func checkStart(player *Player) bool {
 
 	cell := maze1[0][player.y][player.x]
-	if len(cell) > 1 && cell[1:2] == "1" {
+	if len(cell) > 1 && cell[2:3] == "1" {
 		log.Printf("You're on Start again\n")
 		return true
 	}
@@ -234,8 +235,8 @@ func checkStart(player *Player) bool {
 func getStartDirections(player *Player) []byte {
 	for y, row := range maze1[0] {
 		for x, cell := range row {
-			if len(cell) > 1 && cell[1:2] == "1" {
-				var dir = routeElement[cell[0:1]]
+			if len(cell) > 1 && cell[2:3] == "1" {
+				var dir = routeElement[cell[0:2]]
 				player.x = x
 				player.y = y
 				return []byte{dir, 0, 1}
@@ -249,9 +250,7 @@ func getDirections(player *Player) []byte {
 	cell := maze1[0][player.y][player.x]
 	if len(cell) > 0 {
 		log.Printf("%s\n", cell)
-		var dir = routeElement[cell[0:1]]
-		//	currentX = x
-		//	currentY = y
+		var dir = routeElement[cell[0:2]]
 		return []byte{dir, 0, 0}
 	}
 	return nil
