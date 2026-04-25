@@ -23,4 +23,7 @@ TODO's
 
 <img src="doc/jesters_maze_title.png">
 <img src="doc/jesters_maze_hand_drawing.png">
+<img src="screens/maze2.png">
+<img src="screens/stair_up.png">
+<img src="screens/exit2.png">
 
