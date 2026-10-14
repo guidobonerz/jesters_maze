@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- the theme before the first paint, so a reload does not flash light: the one picked (the burger
+       menu, kept in the browser), else that of the system (app.js) -->
+  <meta name="color-scheme" content="light dark">
+  <script>
+    try { document.documentElement.dataset.theme = localStorage.getItem('jm-theme') || ''; } catch { /* no storage */ }
+    document.documentElement.dataset.theme ||= matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  </script>
+  <title>Jester's Maze Editor</title>
+  <!-- the tab icon: the jester of images/jmg_logo.png -->
+  <link rel="icon" href="images/favicon.ico" sizes="16x16 32x32 48x48">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+  <link rel="stylesheet" href="fonts/geist.css">
+  <link rel="stylesheet" href="css/lineawesome.css">
+  <link rel="stylesheet" href="css/m3.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body data-view="editor">
+  <div class="app">
+    <header class="md-top-app-bar">
+      <button class="md-icon-button" id="btn-menu" data-tip="Settings" aria-label="Menu"><i class="msr la la-bars"></i></button>
+      <div class="app-brand">
+        <img class="app-brand__logo" src="images/jmg_logo_128.png" alt="">
+        <span class="md-title-large app-brand__name">Jester's Maze</span>
+      </div>
+      <button class="md-button md-button--text file-button" id="btn-file" data-tip="New, open, save as">
+        <i class="msr la la-file-alt"></i>
+        <span id="file-name">no file</span>
+        <i class="msr la la-angle-down"></i>
+      </button>
+      <!-- Save: the maze into its file on the server; Export: the maze as Go source or JSON. The red dot:
+           changes not saved -->
+      <button class="md-icon-button" id="btn-save" data-tip="Save (Ctrl+S)"><i class="msr la la-save"></i><span class="unsaved-dot" id="save-dot" hidden></span></button>
+      <button class="md-icon-button" id="btn-export" data-tip="Export…"><i class="msr la la-download"></i></button>
+      <button class="md-icon-button" id="btn-import" data-tip="Import a maze (Go source of the server or JSON)"><i class="msr la la-upload"></i></button>
+      <div class="app-bar__spacer"></div>
+      <!-- the SpaceMouse (spacemouse.js): its settings; selected while one is connected. Only where the
+           browser has WebHID -->
+      <button class="md-icon-button" id="btn-spacemouse" data-tip="SpaceMouse" hidden><i class="msr la la-compass"></i></button>
+      <span class="status-chip" id="status-chip"></span>
+      <span class="app-version" id="app-version" hidden></span>
+    </header>
+
+    <nav class="md-nav-rail" aria-label="Views">
+      <button class="md-nav-rail__item md-nav-rail__item--active" data-view="editor">
+        <span class="md-nav-rail__indicator"><i class="msr la la-cubes"></i><span class="md-badge" id="problem-badge" hidden></span></span>
+        <span class="md-nav-rail__label">Maze</span>
+      </button>
+      <button class="md-nav-rail__item" data-view="code">
+        <span class="md-nav-rail__indicator"><i class="msr la la-code"></i></span>
+        <span class="md-nav-rail__label">Code</span>
+      </button>
+    </nav>
+
+    <div class="toolbar" id="toolbar" role="toolbar" aria-label="View tools">
+      <div class="toolbar__view" data-for="editor">
+        <div class="screen-bar">
+          <span class="md-title-medium">Maze editor</span>
+          <span class="screen-bar__sep"></span>
+          <div class="default-tools">
+            <button class="md-icon-button" id="btn-undo" data-tip="Undo (Ctrl+Z)"><i class="msr la la-undo"></i></button>
+            <button class="md-icon-button" id="btn-redo" data-tip="Redo (Ctrl+Y)"><i class="msr la la-redo"></i></button>
+            <button class="md-icon-button" id="btn-zoom-out" data-tip="Zoom out (-, Ctrl+wheel)"><i class="msr la la-search-minus"></i></button>
+            <button class="md-icon-button" id="btn-zoom-in" data-tip="Zoom in (+, Ctrl+wheel)"><i class="msr la la-search-plus"></i></button>
+            <button class="md-icon-button" id="btn-fit" data-tip="Fit to screen (F)"><i class="msr la la-expand"></i></button>
+          </div>
+          <span class="screen-bar__sep"></span>
+          <!-- the tools of the level editor (grid.js) -->
+          <div class="md-segmented tools" id="tools">
+            <button data-tool="select" data-tip="Select (V): click a cell, drag to pan"><i class="msr msr--sm la la-mouse-pointer"></i></button>
+            <button data-tool="carve" data-tip="Carve (C): drag from cell to cell to open the passages, click an edge to toggle it"><i class="msr msr--sm la la-route"></i></button>
+            <button data-tool="wall" data-tip="Wall (W): drag from cell to cell to close the passages, click an edge to toggle it"><i class="msr msr--sm la la-grip-lines-vertical"></i></button>
+            <button data-tool="erase" data-tip="Erase (E): drag to clear cells"><i class="msr msr--sm la la-eraser"></i></button>
+            <button data-tool="stairs" data-tip="Stairs (S): click for stairs up to the next level, Shift+click for stairs down"><i class="msr msr--sm la la-level-up-alt"></i></button>
+            <button data-tool="item" data-tip="Item (I): click to place the item chosen beside, click again to remove it"><i class="msr msr--sm la la-map-marker-alt"></i></button>
+          </div>
+          <div class="item-tool" id="item-tool" hidden></div>
+          <span class="screen-bar__sep"></span>
+          <!-- the level shown: the one below and above, each level by its number -->
+          <div class="levels">
+            <button class="md-icon-button md-icon-button--sm" id="btn-level-down" data-tip="Level below (Page Down)"><i class="msr la la-angle-down"></i></button>
+            <div class="md-segmented" id="level-tabs"></div>
+            <button class="md-icon-button md-icon-button--sm" id="btn-level-up" data-tip="Level above (Page Up)"><i class="msr la la-angle-up"></i></button>
+          </div>
+          <div class="app-bar__spacer"></div>
+          <button class="md-icon-button" id="btn-3d" data-tip="3D view (3)"><i class="msr la la-cube"></i></button>
+          <button class="md-icon-button" id="btn-inspector" data-tip="Inspector (Tab)"><i class="msr la la-columns"></i></button>
+        </div>
+      </div>
+      <div class="toolbar__view" data-for="code" hidden>
+        <div class="screen-bar">
+          <span class="md-title-medium">Code</span>
+          <span class="screen-bar__sep"></span>
+          <div class="md-segmented" id="code-format">
+            <button data-format="go" aria-pressed="true">Go (mazeserver.go)</button>
+            <button data-format="json">JSON</button>
+          </div>
+          <span class="screen-bar__sep"></span>
+          <button class="md-icon-button" id="btn-code-copy" data-tip="Copy to the clipboard"><i class="msr la la-copy"></i></button>
+          <button class="md-icon-button" id="btn-code-download" data-tip="Download"><i class="msr la la-download"></i></button>
+          <span class="screen-bar__sep"></span>
+          <span class="md-body-medium toolbar__hint">The cells as the game server reads them: shape, stairs, type, number</span>
+          <div class="app-bar__spacer"></div>
+        </div>
+      </div>
+    </div>
+
+    <main class="main">
+      <section class="view view--editor" id="view-editor">
+        <div class="split">
+          <div class="grid" id="grid"></div>
+          <div class="split__handle" id="split-handle" data-tip="Drag to resize, double click to reset"></div>
+          <div class="iso" id="iso">
+            <div class="iso__bar">
+              <span class="md-label-medium iso__title"><i class="msr msr--xs la la-cube"></i>3D view</span>
+              <div class="app-bar__spacer"></div>
+              <button class="md-icon-button md-icon-button--xs" id="btn-iso-left" data-tip="Turn left"><i class="msr la la-undo-alt"></i></button>
+              <button class="md-icon-button md-icon-button--xs" id="btn-iso-right" data-tip="Turn right"><i class="msr la la-redo-alt"></i></button>
+              <button class="md-icon-button md-icon-button--xs" id="btn-iso-closer" data-tip="Levels closer"><i class="msr la la-compress-arrows-alt"></i></button>
+              <button class="md-icon-button md-icon-button--xs" id="btn-iso-apart" data-tip="Levels apart"><i class="msr la la-arrows-alt-v"></i></button>
+              <button class="md-icon-button md-icon-button--xs" id="btn-iso-solid" data-tip="All levels solid"><i class="msr la la-layer-group"></i></button>
+              <button class="md-icon-button md-icon-button--xs" id="btn-iso-reset" data-tip="Reset the view (double click)"><i class="msr la la-sync-alt"></i></button>
+            </div>
+            <div class="iso__stage" id="iso-stage"></div>
+            <div class="iso__hint md-body-small">Drag: turn · Wheel: zoom · Click: go to the cell</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view view--code" id="view-code" hidden>
+        <pre class="code" id="code"></pre>
+      </section>
+
+      <aside class="md-side-sheet side" id="inspector"></aside>
+    </main>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

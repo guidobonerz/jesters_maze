@@ -1,0 +1,13 @@
+{
+  "name": "jesters-maze-editor",
+  "version": "1.0.0",
+  "description": "Web based editor for the three dimensional mazes of Jester's Maze",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}
