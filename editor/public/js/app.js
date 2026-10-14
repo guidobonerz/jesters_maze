@@ -8,6 +8,7 @@ import { $, h, icon, openMenu, dialog, field, toast, download, pickFile } from '
 import { createGrid, isTyping } from './grid.js';
 import { createIso } from './iso.js';
 import { createInspector } from './inspector.js';
+import { createPlay } from './play.js';
 import { createSpaceMouse, supported as hidSupported } from './spacemouse.js';
 
 // ---- the server (editor/main.go): the mazes as files. Without it the editor keeps the maze in the
@@ -33,6 +34,7 @@ const fileName = s => String(s).trim().replace(/[^A-Za-z0-9_-]+/g, '_').replace(
 const grid = createGrid($('#grid'));
 const iso = createIso($('#iso-stage'));
 createInspector($('#inspector'));
+const play = createPlay({ body: $('#view-play'), bar: $('.toolbar__view[data-for="play"]') });
 
 function showView(v) {
   document.body.dataset.view = v;
@@ -40,6 +42,7 @@ function showView(v) {
   document.querySelectorAll('.toolbar__view').forEach(t => { t.hidden = t.dataset.for !== v; });
   document.querySelectorAll('.view').forEach(s => { s.hidden = s.id !== `view-${v}`; });
   if (v === 'code') renderCode();
+  if (v === 'play') play.show();
   updateChrome();
 }
 document.querySelectorAll('.md-nav-rail__item').forEach(b => { b.onclick = () => showView(b.dataset.view); });

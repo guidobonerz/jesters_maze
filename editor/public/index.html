@@ -50,6 +50,10 @@
         <span class="md-nav-rail__indicator"><i class="msr la la-cubes"></i><span class="md-badge" id="problem-badge" hidden></span></span>
         <span class="md-nav-rail__label">Maze</span>
       </button>
+      <button class="md-nav-rail__item" data-view="play">
+        <span class="md-nav-rail__indicator"><i class="msr la la-gamepad"></i></span>
+        <span class="md-nav-rail__label">Play</span>
+      </button>
       <button class="md-nav-rail__item" data-view="code">
         <span class="md-nav-rail__indicator"><i class="msr la la-code"></i></span>
         <span class="md-nav-rail__label">Code</span>
@@ -91,6 +95,8 @@
           <button class="md-icon-button" id="btn-inspector" data-tip="Inspector (Tab)"><i class="msr la la-columns"></i></button>
         </div>
       </div>
+      <!-- the play view: play.js builds its bar and its body -->
+      <div class="toolbar__view" data-for="play" hidden></div>
       <div class="toolbar__view" data-for="code" hidden>
         <div class="screen-bar">
           <span class="md-title-medium">Code</span>
@@ -130,6 +136,8 @@
           </div>
         </div>
       </section>
+
+      <section class="view view--play" id="view-play" hidden></section>
 
       <section class="view view--code" id="view-code" hidden>
         <pre class="code" id="code"></pre>

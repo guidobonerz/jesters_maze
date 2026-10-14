@@ -269,3 +269,61 @@ body.col-resizing { cursor: col-resize; user-select: none; }
 .sm-range__value { width: 40px; text-align: right; font-variant-numeric: tabular-nums; }
 .sm-checks { display: flex; gap: 24px; color: var(--md-sys-color-on-surface); }
 .sm-note { color: var(--md-sys-color-on-surface-variant); }
+
+/* ---- the play view (play.js): the screen of the game left, the way walked in 3D right ---------- */
+
+@font-face {
+  font-family: "C64 Pro Mono";
+  src: url("../fonts/C64_Pro_Mono-STYLE.woff2") format("woff2"), url("../fonts/C64_Pro_Mono-STYLE.woff") format("woff");
+  font-display: block;
+}
+:root { --c64-font: "C64 Pro Mono", monospace; --c64-yellow: #eeee77; --c64-grey: #6c6c6c; --c64-light-blue: #6c5eb5; }
+.play-bar { flex-wrap: nowrap; }
+.play-keys { color: var(--md-sys-color-on-surface-variant); white-space: nowrap; }
+.play-keys kbd { padding: 1px 5px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: var(--md-shape-xs); font-family: var(--md-font-mono); font-size: 11px; }
+.play-note { color: var(--md-sys-color-on-surface-variant); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; text-align: right; }
+@media (max-width: 1100px) { .play-note { display: none; } }
+
+.play-split { position: absolute; inset: 0; display: flex; }
+.play-main { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 24px 16px; overflow: auto; background: var(--md-sys-color-surface-container-low); }
+.play-iso { border-left: 1px solid var(--md-sys-color-outline-variant); width: 42%; }
+
+.play-screen {
+  width: 640px; padding: 16px 0; flex: none;
+  background: #000; color: var(--c64-light-blue); border-radius: var(--md-shape-md); box-shadow: var(--md-elevation-2);
+  font-family: var(--c64-font); font-size: 16px; line-height: 16px; user-select: none;
+}
+.play-stage { position: relative; width: 640px; height: 192px; }
+/* the pictures of the game: 160 x 96 multicolor pixels, each twice as wide as high */
+.play-pic { display: block; width: 640px; height: 192px; image-rendering: pixelated; }
+.play-won {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  background: rgb(0 0 0 / .72); color: var(--c64-yellow); text-align: center;
+}
+.play-won__title { font-size: 32px; line-height: 32px; }
+.play-won__hint { color: #aaffee; }
+.play-row { min-height: 16px; padding: 0 16px; white-space: pre-wrap; }
+.play-msg { margin-top: 12px; min-height: 32px; color: #ffffff; }
+.play-panel { display: grid; grid-template-columns: 96px 48px 1fr; align-items: center; gap: 16px; padding: 12px 16px 0; }
+/* the arrows: where the way is open, yellow as the sprites of the game */
+.play-compass { display: grid; grid-template-columns: repeat(3, 32px); grid-template-rows: repeat(3, 24px); place-items: center; }
+.play-arrow { display: grid; place-items: center; color: #333; }
+.play-arrow .msr { font-size: 20px; }
+.play-stairs .msr { font-size: 26px; }
+.play-arrow--open { color: var(--c64-yellow); }
+.play-arrow--n { grid-area: 1 / 2; }
+.play-arrow--w { grid-area: 2 / 1; }
+.play-arrow--e { grid-area: 2 / 3; }
+.play-arrow--s { grid-area: 3 / 2; }
+.play-stairs { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.play-info { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.play-info .play-row { padding: 0; }
+.play-bag { display: flex; flex-wrap: wrap; gap: 6px; min-height: 24px; }
+.play-bag__empty { color: var(--c64-grey); }
+.play-item { display: inline-flex; align-items: center; gap: 2px; padding: 2px 4px; border: 1px solid var(--item); border-radius: 3px; color: var(--item); }
+.play-item .msr { color: var(--item); }
+.play-stale { width: 640px; padding: 8px 14px; border-radius: var(--md-shape-sm); background: var(--md-sys-color-tertiary-container); color: var(--md-sys-color-on-tertiary-container); font-size: 13px; }
+.play-empty { display: grid; justify-items: center; gap: 12px; margin-top: 15vh; text-align: center; color: var(--md-sys-color-on-surface-variant); max-width: 44ch; }
+.play-empty .msr { font-size: 56px; color: var(--md-sys-color-outline); }
+.screen-foot { width: 640px; }
+.screen-status { color: var(--md-sys-color-on-surface-variant); }

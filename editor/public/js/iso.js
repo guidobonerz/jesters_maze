@@ -2,13 +2,16 @@
 // between the levels. Drag: turn and tilt, wheel: zoom, double click: back to the start view,
 // click on a cell: the level editor goes there. The level shown in the editor is in full color,
 // the others are faint (unless "all levels solid").
+// opts (the play view, play.js): level() - the level in full color instead of the editor's, path() -
+// { path: [{x, y, z}], pos } the way walked and where the player is, drawn over the blocks; no
+// selection, a click selects nothing.
 
 import { state, subscribe, setView } from './store.js';
 import { U, TYPES } from './maze.js';
 
 const HUES = [217, 160, 35, 280, 0, 190, 90, 320];
 
-export function createIso(host) {
+export function createIso(host, opts = {}) {
   const canvas = host.appendChild(document.createElement('canvas'));
   canvas.className = 'iso__canvas';
   const ctx = canvas.getContext('2d');
@@ -29,7 +32,7 @@ export function createIso(host) {
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, hh);
-    const m = state.maze, dark = document.documentElement.dataset.theme === 'dark';
+    const m = state.maze, dark = document.documentElement.dataset.theme === 'dark', lv = opts.level?.() ?? state.level;
     const cx = m.width / 2, cy = m.depth / 2, cz = (m.levels - 1) * view.spread / 2;
     const cr = Math.cos(view.roll), sr = Math.sin(view.roll);
     const cos = Math.cos(view.yaw), sin = Math.sin(view.yaw), sp = Math.sin(view.pitch), cp = Math.cos(view.pitch);
@@ -46,13 +49,13 @@ export function createIso(host) {
 
     // the frames of the levels, the floors under the paths
     for (let z = 0; z < m.levels; z++) {
-      const Z = z * view.spread, a = z === state.level ? .9 : .35;
+      const Z = z * view.spread, a = z === lv ? .9 : .35;
       const pts = [px(0, 0, Z), px(m.width, 0, Z), px(m.width, m.depth, Z), px(0, m.depth, Z)];
       ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath();
-      ctx.fillStyle = `hsla(${HUES[z % HUES.length]} 40% ${dark ? 30 : 60}% / ${z === state.level ? .12 : .05})`;
+      ctx.fillStyle = `hsla(${HUES[z % HUES.length]} 40% ${dark ? 30 : 60}% / ${z === lv ? .12 : .05})`;
       ctx.fill();
       ctx.strokeStyle = `hsla(${HUES[z % HUES.length]} 50% ${dark ? 65 : 45}% / ${a})`;
-      ctx.lineWidth = z === state.level ? 1.5 : 1;
+      ctx.lineWidth = z === lv ? 1.5 : 1;
       ctx.stroke();
     }
 
@@ -60,7 +63,7 @@ export function createIso(host) {
     const boxes = [];
     const k = .22, hgt = .32;
     for (let z = 0; z < m.levels; z++) {
-      const Z = z * view.spread, focus = solid || z === state.level;
+      const Z = z * view.spread, focus = solid || z === lv;
       for (let y = 0; y < m.depth; y++) for (let x = 0; x < m.width; x++) {
         const c = m.cells[z][y][x];
         if (!c.o) continue;
@@ -83,12 +86,12 @@ export function createIso(host) {
     boxes.sort((p, q) => p.depth - q.depth);
 
     hits = [];
-    const sel = state.sel;
+    const sel = opts.path ? null : state.sel;
     for (const bx of boxes) {
       const [x0, y0, z0, x1, y1, z1] = bx.b;
       const hue = bx.stairs ? 24 : HUES[bx.z % HUES.length];
       const alpha = bx.focus ? 1 : .28;
-      const isSel = bx.focus && sel && bx.z === state.level && bx.cell.x === sel.x && bx.cell.y === sel.y;
+      const isSel = bx.focus && sel && bx.z === lv && bx.cell.x === sel.x && bx.cell.y === sel.y;
       const L = dark ? 62 : 52;
       const shade = (dl, sat = 55) => isSel ? `hsla(217 91% ${60 + dl / 2}% / ${alpha})` : `hsla(${hue} ${sat}% ${L + dl}% / ${alpha})`;
       const quad = (pts, fill) => {
@@ -113,13 +116,45 @@ export function createIso(host) {
       }
     }
 
+    // the way walked (play.js): a line through the middles of the cells, up and down the stairs;
+    // the player a ring where it is
+    const walk = opts.path?.();
+    if (walk?.path.length) {
+      const top = z => z * view.spread + hgt + .04;
+      const pts = walk.path.map(p => px(p.x + .5, p.y + .5, top(p.z)));
+      ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      ctx.strokeStyle = dark ? 'rgba(0,0,0,.55)' : 'rgba(255,255,255,.8)'; ctx.lineWidth = Math.max(4, scale * .2);
+      ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke();
+      ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = Math.max(2, scale * .11);
+      ctx.stroke();
+      const [sx, sy] = pts[0];
+      ctx.fillStyle = '#16a34a'; ctx.beginPath(); ctx.arc(sx, sy, Math.max(3, scale * .12), 0, Math.PI * 2); ctx.fill();
+      const p = walk.pos, [x, y] = px(p.x + .5, p.y + .5, top(p.z));
+      const r = Math.max(5, scale * .26);
+      ctx.fillStyle = '#facc15'; ctx.strokeStyle = dark ? '#09090b' : '#fff'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      // the way the player faces: a point at the edge of its ring
+      const f = { n: [0, -1], s: [0, 1], w: [-1, 0], e: [1, 0] }[walk.facing];
+      if (f) {
+        const [tx, ty] = px(p.x + .5 + f[0] * .48, p.y + .5 + f[1] * .48, top(p.z));
+        const a = Math.atan2(ty - y, tx - x), len = Math.max(r * 1.9, Math.hypot(tx - x, ty - y));
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath();
+        ctx.moveTo(x + Math.cos(a) * len, y + Math.sin(a) * len);
+        ctx.lineTo(x + Math.cos(a + 2.5) * r, y + Math.sin(a + 2.5) * r);
+        ctx.lineTo(x + Math.cos(a - 2.5) * r, y + Math.sin(a - 2.5) * r);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+      }
+      ctx.lineCap = 'butt';
+    }
+
     // the numbers of the levels at their corner
     ctx.font = '600 12px Geist, system-ui, sans-serif';
     ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
     for (let z = 0; z < m.levels; z++) {
       const corners = [[0, 0], [m.width, 0], [m.width, m.depth], [0, m.depth]].map(([x, y]) => px(x, y, z * view.spread));
       const left = corners.reduce((p, q) => (q[0] < p[0] ? q : p));
-      ctx.fillStyle = `hsla(${HUES[z % HUES.length]} 50% ${dark ? 65 : 40}% / ${z === state.level ? 1 : .6})`;
+      ctx.fillStyle = `hsla(${HUES[z % HUES.length]} 50% ${dark ? 65 : 40}% / ${z === lv ? 1 : .6})`;
       ctx.fillText(`L${z + 1}`, left[0] - 8, left[1]);
     }
   }
@@ -145,7 +180,7 @@ export function createIso(host) {
     const moved = drag.moved;
     drag = null;
     host.classList.remove('iso--turning');
-    if (moved) return;
+    if (moved || opts.path) return;
     const r = canvas.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
     for (let i = hits.length - 1; i >= 0; i--) {
       if (inPoly(x, y, hits[i].poly)) return setView({ level: hits[i].z, sel: { x: hits[i].x, y: hits[i].y } });

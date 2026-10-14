@@ -28,6 +28,11 @@ The files in `public/` are read on every request: edit and reload.
   and invert settings. Connects automatically: a SpaceMouse allowed once opens at the start and when it is
   plugged in; before that, the first click in the editor opens the browser's device chooser (once - the
   browser lets a page ask only from a click).
+- **Play** (rail): walks the maze as the game server does, with the pictures of the game (`screens/`) and
+  yellow arrows for the open ways. Walking is first-person: ↑ forward, → / ← turn right / left and walk,
+  ↓ back - every step turns the player the way it went. Shift+↑/↓ (or Page Up/Down) take the stairs, F1 goes
+  back to the start. Treasures, lamp oil and keys are picked up; a gate needs the key of its number; the exit
+  ends the walk. The 3D view beside it shows the way walked (orange), the start (green) and the player (yellow, the red point: the way it faces).
 - **Code** (rail): the maze as the Go literal for `mazeserver.go`, or as JSON.
 
 ## Format
