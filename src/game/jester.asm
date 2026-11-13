@@ -444,10 +444,41 @@ NET_CMD_DOWN:
 NET_CMD_DOWN_END:
 
 responseCount: .byte 00
+// Wall-clock limit for the reply, in BCD seconds (CIA1 time-of-day clock).
+// The reply is waited for by time, not by the firmware: READ on an empty
+// socket may return at once with length $FFFF.
+.const REPLY_TIMEOUT_SECS = $03
+todStart: .byte 0
+
+todExpired:{ // C set when REPLY_TIMEOUT_SECS or more have passed
+    lda $dc08 // tenths first: never latch the hours
+    lda $dc09
+    php
+    sei
+    sed
+    sec
+    sbc todStart
+    bcs ok
+    sec
+    sbc #$40 // minute wrapped: 100-x -> 60-x
+ok:
+    cld
+    plp
+    cmp #REPLY_TIMEOUT_SECS
+    rts
+}
+
 handleResponse:{
     lda #$00
     sta uppercase
     sta responseCount
+    lda $dc0f
+    and #$7f // writes set the clock, not the alarm
+    sta $dc0f
+    lda #$00
+    sta $dc08 // writing the tenths (re)starts the clock
+    lda $dc09
+    sta todStart
 read:    
     lda socket
     sta NET_CMD_SOCKET_READ+2
@@ -459,6 +490,14 @@ read:
     jsr readData
     jsr readStatusData
     jsr accept
+    lda dataBuffer // length $FFFF = nothing queued yet: ask again
+    and dataBuffer+1
+    cmp #$ff
+    bne gotReply
+    jsr todExpired
+    bcs gotReply // (jmp: sendCommand expands too long for a branch)
+    jmp read
+gotReply:
     lda dataBuffer+2 // directions
     sta $0400
     lda dataBuffer+3 // gadgets
